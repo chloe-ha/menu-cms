@@ -1,35 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import 'reflect-metadata';
+import Navigation from './features/navigation/Navigation';
+import RestaurantPage from './features/restaurant/components/RestaurantPage';
+import MenuPage from './features/menu/MenuPage';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <BrowserRouter>
+      <Navigation />
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <Routes>
+          <Route path="/" element={<Navigate to="/restaurant" replace />} />
+          <Route path="/restaurant" element={<RestaurantPage />} />
+          <Route path="/menu" element={<MenuPage />} />
 
-export default App
+          <Route path="*" element={
+            <div className="p-8 text-center text-xl text-red-500">
+              404 - Page Not Found
+            </div>
+          } />
+        </Routes>
+      </main>
+    </BrowserRouter>
+  );
+};
+
+export default App;

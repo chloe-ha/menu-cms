@@ -8,6 +8,9 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
 
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -18,6 +21,7 @@
 
     /* Linting */
     "strict": true,
+    "strictPropertyInitialization": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

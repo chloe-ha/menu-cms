@@ -1,0 +1,74 @@
+import React, { useState } from 'react'
+import type { RestaurantDto } from '../dto/restaurant.dto';
+import { updateRestaurantInfo } from '../api.service';
+
+export type RestaurantBasicInfo = Pick<RestaurantDto, 'name' | 'description' | 'images'>;
+
+type BasicInfoFormProps = {
+  data: RestaurantBasicInfo;
+};
+const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data }) => {
+  const [formData, setFormData] = useState<RestaurantBasicInfo>(data);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    updateRestaurantInfo(formData)
+      .then(() => alert('Restaurant information updated! (Check console for data)'))
+      .catch((error) => {
+        setError('Failed to update restaurant information: ' + error.message);
+      });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-xl font-semibold mb-4 w-full border-b py-2">Basic Details</h2>
+      <div className="grid grid-cols-1 gap-6">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium">Restaurant Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="mt-1 block w-full"
+          />
+        </div>
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium">
+            Description (Max 500 chars)
+          </label>
+          <textarea
+            id="description"
+            name="description"
+            rows={4}
+            value={formData.description}
+            onChange={handleChange}
+            maxLength={500}
+            className="mt-1 block w-full"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end pt-4">
+        {error && <p className="text-red-500 mr-4">{error}</p>}
+        <button
+          type="submit"
+          className="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
+        >
+          Save changes
+        </button>
+      </div>
+    </form>
+  )
+}
+
+export default BasicInfoForm
