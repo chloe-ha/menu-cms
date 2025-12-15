@@ -1,0 +1,208 @@
+name: Apps CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend-public/**'
+      - '.github/workflows/main.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'apps/frontend-public/**'
+      - '.github/workflows/main.yml'
+
+env:
+  AWS_REGION: eu-north-1
+  ECS_CLUSTER: menu-cms
+  BACKEND_BASE_URL: http://alb-menucms-backend-1033732891.eu-north-1.elb.amazonaws.com
+  BACKEND_ECR_REPOSITORY: menu-cms/backend
+  BACKEND_ECS_TASK_DEFINITION: menu-cms-backend-task
+  BACKEND_CONTAINER_NAME: menu-cms-backend-container
+  BACKEND_ECS_SERVICE: menu-cms-backend-service
+  FRONTEND_PUBLIC_ECR_REPOSITORY: menu-cms/frontend-public
+  FRONTEND_PUBLIC_ECS_TASK_DEFINITION: menu-cms-frontend-public-task
+  FRONTEND_PUBLIC_CONTAINER_NAME: menu-cms-frontend-public-container
+  FRONTEND_PUBLIC_ECS_SERVICE: menu-cms-frontend-public-service
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend-public: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'apps/backend/**'
+            frontend:
+              - 'apps/frontend-public/**'
+
+  build_deploy_backend:
+    name: Build and Deploy Backend
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd apps/backend
+          docker build -t $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$BACKEND_ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.BACKEND_ECS_TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
+
+      - name: Update task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.BACKEND_CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.BACKEND_ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Wait for backend to be fully healthy
+        run: |
+          echo "Waiting additional 30 seconds for backend to be fully ready..."
+          sleep 30
+
+          # Verify backend is responding
+          for i in {1..10}; do
+            if curl -f -s "$BACKEND_BASE_URL/health" > /dev/null; then
+              echo "✅ Backend is healthy!"
+              exit 0
+            fi
+            echo "Waiting for backend... attempt $i/10"
+            sleep 30
+          done
+          echo "❌ Backend health check failed"
+          exit 1
+
+  build_deploy_frontend_public:
+    name: Build and Deploy Frontend Public
+    runs-on: ubuntu-latest
+    needs: [changes, build_deploy_backend]
+    if: |
+      always() &&
+      needs.changes.outputs.frontend-public == 'true' &&
+      (needs.build_deploy_backend.result == 'success' || needs.build_deploy_backend.result == 'skipped')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          cd apps/frontend-public
+          docker build \
+            --build-arg BACKEND_API_URL=${{ env.BACKEND_BASE_URL }}/api \
+            -t $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ env.FRONTEND_PUBLIC_ECS_TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
+
+      - name: Update task definition with new image
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.FRONTEND_PUBLIC_CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.FRONTEND_PUBLIC_ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: Get Load Balancer URL
+        id: get-url
+        run: |
+          LB_DNS=$(aws elbv2 describe-load-balancers \
+            --names ALB-MenuCMS-FrontendPublic \
+            --query 'LoadBalancers[0].DNSName' \
+            --output text)
+          echo "Frontend URL: http://$LB_DNS"
+          echo "lb_dns=$LB_DNS" >> $GITHUB_OUTPUT
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Frontend deployment successful!"
+          echo "Image: ${{ steps.build-image.outputs.image }}"
+          echo "Service: ${{ env.FRONTEND_PUBLIC_ECS_SERVICE }}"
+          echo "Cluster: ${{ env.ECS_CLUSTER }}"
+          echo "URL: http://${{ steps.get-url.outputs.lb_dns }}"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Frontend deployment failed!"
+          exit 1

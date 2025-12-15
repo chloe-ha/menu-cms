@@ -14,7 +14,8 @@ COPY . .
 # Next.js collects anonymous telemetry data about general usage.
 # Uncomment the following line to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV BACKEND_API_URL=http://alb-menucms-backend-1033732891.eu-north-1.elb.amazonaws.com/api
+ARG BACKEND_API_URL
+ENV BACKEND_API_URL=$BACKEND_API_URL
 
 RUN npm run build
 
@@ -26,7 +27,8 @@ FROM node:24-alpine AS runner
 WORKDIR /app
 
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV BACKEND_API_URL=http://alb-menucms-backend-1033732891.eu-north-1.elb.amazonaws.com/api
+ARG BACKEND_API_URL
+ENV BACKEND_API_URL=$BACKEND_API_URL
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
