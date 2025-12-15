@@ -6,7 +6,7 @@ import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosReques
 
 // Define the base URL for your backend API
 // Use environment variables for production readiness (e.g., VITE_API_URL)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000/api';
 
 // -----------------------------------------------------------------------------
 // 2. Create the Axios Instance
