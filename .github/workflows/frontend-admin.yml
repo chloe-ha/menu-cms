@@ -1,0 +1,88 @@
+name: Frontend Admin CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/frontend-admin/**'
+      - '.github/workflows/main.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/frontend-admin/**'
+      - '.github/workflows/main.yml'
+
+env:
+  AWS_REGION: eu-north-1
+  BACKEND_BASE_URL: https://api.viethai.be
+  FRONTEND_ADMIN_S3_BUCKET: menu-cms-admin
+  FRONTEND_ADMIN_CLOUDFRONT_DISTRIBUTION_ID: E1C48FCD8IQNR
+
+jobs:
+  build_deploy_frontend_admin:
+    name: Build and Deploy Frontend Admin
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/frontend-admin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: apps/frontend-admin/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_BACKEND_API_URL: ${{ env.BACKEND_BASE_URL }}/api
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ADMIN_APP_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ADMIN_APP_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync files to S3
+        run: |
+          aws s3 sync dist/ s3://${{ env.FRONTEND_ADMIN_S3_BUCKET }}/ \
+            --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html" \
+
+          # Upload index.html with no-cache to ensure users get latest version
+          aws s3 cp dist/index.html s3://${{ env.FRONTEND_ADMIN_S3_BUCKET }}/index.html \
+            --cache-control "no-cache,no-store,must-revalidate" \
+            --metadata-directive REPLACE
+
+      - name: Create CloudFront invalidation
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.FRONTEND_ADMIN_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      - name: Get CloudFront domain
+        id: cloudfront
+        run: |
+          DOMAIN=$(aws cloudfront get-distribution \
+            --id ${{ env.FRONTEND_ADMIN_CLOUDFRONT_DISTRIBUTION_ID }} \
+            --query 'Distribution.DomainName' \
+            --output text)
+          echo "domain=$DOMAIN" >> $GITHUB_OUTPUT
+
+      - name: Deployment summary
+        run: |
+          echo "🎉 Admin app deployed successfully!"
+          echo "CloudFront URL: https://${{ steps.cloudfront.outputs.domain }}"
+          echo "S3 Bucket: s3://${{ env.FRONTEND_ADMIN_S3_BUCKET }}"
+          echo ""
+          echo "⏳ Note: CloudFront invalidation may take 5-10 minutes to complete."
