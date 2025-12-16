@@ -1,16 +1,7 @@
 name: Frontend Admin CI/CD
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'apps/frontend-admin/**'
-      - '.github/workflows/main.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'apps/frontend-admin/**'
-      - '.github/workflows/main.yml'
+  workflow_dispatch:
 
 env:
   AWS_REGION: eu-north-1
