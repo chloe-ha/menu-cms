@@ -20,7 +20,6 @@ interface RestaurantDto {
 
 export async function getRestaurantData(): Promise<RestaurantDto> {
   const fetchUrl = `${process.env.BACKEND_API_URL}/restaurants/693b60888a60d3cb46093b86`;
-  console.log(fetchUrl);
   const res = await fetch(fetchUrl);
   if (!res.ok) {
     throw new Error('Failed to fetch restaurant data');
