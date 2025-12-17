@@ -11,9 +11,9 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 const Button: React.FC<ButtonProps> = (props) => {
   const {
     className,
-    text = 'Save changes',
+    text = 'Enregistrer',
     loading = false,
-    loadingText = 'Processing',
+    loadingText = 'Un moment',
     disabled,
     ...rest
   } = props;

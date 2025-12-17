@@ -74,7 +74,7 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ item, index, moveImage,
           absolute top-0 right-0 bg-red-600 bg-opacity-70 text-white
           text-xs font-bold p-1 rounded-bl-lg hover:bg-red-700 transition
         "
-        title="Remove Image"
+        title="Retirer l'image"
       >
         <X size={16} />
       </button>
@@ -86,7 +86,7 @@ const DraggableImage: React.FC<DraggableImageProps> = ({ item, index, moveImage,
 
       {/* Overlay indicating New File */}
       {item.type === 'file' && (
-        <span className="absolute bottom-0 left-0 text-xs bg-green-500 text-white px-1 py-0.5 rounded-tr-lg">New</span>
+        <span className="absolute bottom-0 left-0 text-xs bg-green-500 text-white px-1 py-0.5 rounded-tr-lg">Nouv</span>
       )}
     </div>
   );
@@ -187,7 +187,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
         "
       >
         <Plus size={20} className="mr-2" />
-        Add Images
+        Ajouter
       </label>
 
       <div className="flex flex-wrap border border-gray-300 p-4 rounded-lg min-h-30">
@@ -201,7 +201,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
           />
         ))}
         {imageItems.length === 0 && (
-          <p className="text-gray-500 italic text-sm m-auto">Click 'Add Images' or drag files here to begin.</p>
+          <p className="text-gray-500 italic text-sm m-auto">Clickez sur 'Ajouter' pour commencer.</p>
         )}
       </div>
     </DndProvider>

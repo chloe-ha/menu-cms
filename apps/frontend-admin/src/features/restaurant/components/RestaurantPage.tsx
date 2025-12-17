@@ -40,11 +40,11 @@ const RestaurantPage: React.FC = () => {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-4">
-        🍽️ Restaurant Information Management
+        🍽️ Informations du Restaurant
       </h1>
-      {loading && <p>Loading restaurant data...</p>}
+      {loading && <p>Chargement en cours...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      {!loading && !error && formData == null && <p>No restaurant data available.</p>}
+      {!loading && !error && formData == null && <p>Aucune donnée disponible.</p>}
       {!loading && !error && formData != null && (
         <React.Fragment>
           <BasicInfoForm data={extractBasicInfo(formData)} onSubmitSuccessful={fetchInfo} />

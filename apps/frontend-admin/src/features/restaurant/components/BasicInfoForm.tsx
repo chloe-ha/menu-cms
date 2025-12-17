@@ -42,10 +42,10 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data, onSubmitSuccessful 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-xl font-semibold mb-4 w-full border-b py-2">Basic Details</h2>
+      <h2 className="text-xl font-semibold mb-4 w-full border-b py-2">Informations générales</h2>
       <div className="grid grid-cols-1 gap-6">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium">Restaurant Name</label>
+          <label htmlFor="name" className="block text-sm font-medium">Nom du restaurant</label>
           <input
             type="text"
             id="name"
@@ -57,7 +57,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data, onSubmitSuccessful 
         </div>
         <div>
           <label htmlFor="description" className="block text-sm font-medium">
-            Description (Max 500 chars)
+            Description (Max 500 caractères)
           </label>
           <textarea
             id="description"

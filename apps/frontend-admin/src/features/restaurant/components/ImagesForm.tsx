@@ -62,7 +62,7 @@ const ImagesForm: React.FC<ImagesFormProps> = ({ data, onSubmitSuccessful }) => 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-xl font-semibold mb-4 w-full border-b py-2">Images</h2>
+      <h2 className="text-xl font-semibold mb-4 w-full border-b py-2">Images de la bannière</h2>
       <ImageUpload
         id="images"
         value={imageItems}
