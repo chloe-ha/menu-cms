@@ -23,7 +23,7 @@ export default async function Page() {
             {restaurant.images.map((image, index) => (
               <CarouselItem key={index} className="">
                 <div key={image} className={cn("relative h-[150px] md:h-60")}>
-                  <Image src={`${S3BaseUrl}${image}`} alt="banner image" fill className="object-cover" />
+                  <Image src={`${S3BaseUrl}${image}`} alt="banner image" fill className="object-cover" priority={index === 0} />
                 </div>
               </CarouselItem>
             ))}
