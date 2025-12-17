@@ -25,7 +25,7 @@
 
 @layer base {
   body {
-    @apply min-h-screen min-w-screen bg-background text-foreground;
+    @apply min-h-screen min-w-screen bg-background text-foreground overflow-x-hidden;
   }
   input,
   textarea {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { Plus, X } from 'lucide-react';
+import _ from "lodash";
 
 export type FileImageItem = { type: 'file'; file: File; };
 export type S3ImageItem = { type: 's3'; s3Key: string; isPendingDelete?: boolean; };
@@ -100,12 +101,13 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setImageItems(value);
+    if (!_.isEqual(value, imageItems)) {
+      setImageItems(value);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
   useEffect(() => {
-    onChange(imageItems);
-
     return () => {
       imageItems.forEach(item => {
         if (item.type === 'file' && item.previewUrl.startsWith('blob:')) {
@@ -113,7 +115,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
         }
       });
     };
-  }, [imageItems, onChange]);
+  }, [imageItems]);
 
   const handleFileSelection = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -125,11 +127,15 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
         previewUrl: URL.createObjectURL(file),
     }));
 
-    setImageItems((prevItems) => [...prevItems, ...newImageItems]);
+    setImageItems((prevItems) => {
+      const newItems = [...prevItems, ...newImageItems]
+      onChange(newItems);
+      return newItems;
+    });
 
     // Workaround to force the onChange event to fire even when the same file is selected consecutively
     if (inputRef.current) inputRef.current.value = '';
-  }, []);
+  }, [onChange]);
 
   const moveImage = useCallback((dragIndex: number, hoverIndex: number) => {
     setImageItems((prevItems) => {
@@ -137,9 +143,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
       const draggedItem = newItems[dragIndex];
       newItems.splice(dragIndex, 1);
       newItems.splice(hoverIndex, 0, draggedItem);
+      onChange(newItems);
       return newItems;
     });
-  }, []);
+  }, [onChange]);
 
   const handleRemove = useCallback((id: string) => {
     setImageItems((prevItems) => {
@@ -147,24 +154,31 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
 
       if (!itemToRemove) return prevItems;
 
+      let newItems;
+
       // If it's a new file, remove it completely and revoke the Blob URL
       if (itemToRemove.type === 'file') {
         if (itemToRemove.previewUrl.startsWith('blob:')) {
             URL.revokeObjectURL(itemToRemove.previewUrl);
         }
-        return prevItems.filter(item => item.id !== id);
+        newItems = prevItems.filter(item => item.id !== id);
       }
 
       // If it's an existing S3 image, mark it for pending deletion
       if (itemToRemove.type === 's3') {
-        return prevItems.map(item =>
+        newItems = prevItems.map(item =>
           item.id === id ? { ...item, isPendingDelete: true } : item
         );
       }
 
-      return prevItems;
+      if (!newItems) {
+        return prevItems;
+      }
+
+      onChange(newItems);
+      return newItems;
     });
-  }, []);
+  }, [onChange]);
 
   return (
     <DndProvider backend={HTML5Backend}>
