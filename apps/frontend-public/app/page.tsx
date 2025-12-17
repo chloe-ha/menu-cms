@@ -22,7 +22,7 @@ export default async function Page() {
           <CarouselContent>
             {restaurant.images.map((image, index) => (
               <CarouselItem key={index} className="">
-                <div key={image} className={cn("relative h-[150px]")}>
+                <div key={image} className={cn("relative h-[150px] md:h-60")}>
                   <Image src={`${S3BaseUrl}${image}`} alt="banner image" fill className="object-cover" />
                 </div>
               </CarouselItem>
@@ -34,7 +34,7 @@ export default async function Page() {
       <MaxWidthContainer>
         <div className="flex flex-col gap-4">
           {restaurant.name ? <h1 className="text-3xl sm:text-5xl font-bold">{restaurant.name}</h1>: null}
-          {restaurant.description ? <p>{restaurant.description}</p>: null}
+          {restaurant.description ? <p className="whitespace-pre-wrap">{restaurant.description}</p>: null}
           {restaurant.address ? <span className="flex gap-1 items-center"><MapPin size={18} />{restaurant.address}</span>: null}
           {restaurant.phoneNumber ? <a className="flex gap-1 items-center" href={`tel:${restaurant.phoneNumber}`}><Phone size={18} />{restaurant.phoneNumber}</a>: null}
           <Accordion type="single" collapsible>
