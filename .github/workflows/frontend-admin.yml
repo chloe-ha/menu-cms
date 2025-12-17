@@ -5,6 +5,7 @@ on:
 
 env:
   AWS_REGION: eu-north-1
+  S3_BUCKET_NAME: menu-cms-test
   BACKEND_BASE_URL: https://api.viethai.be
   FRONTEND_ADMIN_S3_BUCKET: menu-cms-admin
   FRONTEND_ADMIN_CLOUDFRONT_DISTRIBUTION_ID: E1C48FCD8IQNR
@@ -35,6 +36,8 @@ jobs:
         run: npm run build
         env:
           VITE_BACKEND_API_URL: ${{ env.BACKEND_BASE_URL }}/api
+          VITE_AWS_S3_REGION: ${{ env.AWS_REGION }}
+          VITE_AWS_S3_BUCKET_NAME: ${{ env.S3_BUCKET_NAME }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

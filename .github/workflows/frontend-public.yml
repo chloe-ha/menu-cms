@@ -6,6 +6,7 @@ on:
 env:
   AWS_REGION: eu-north-1
   ECS_CLUSTER: menu-cms
+  S3_BUCKET_NAME: menu-cms-test
   BACKEND_BASE_URL: https://api.viethai.be
   FRONTEND_PUBLIC_ECR_REPOSITORY: menu-cms/frontend-public
   FRONTEND_PUBLIC_ECS_TASK_DEFINITION: menu-cms-frontend-public-task
@@ -41,6 +42,8 @@ jobs:
           cd apps/frontend-public
           docker build \
             --build-arg BACKEND_API_URL=${{ env.BACKEND_BASE_URL }}/api \
+            --build-arg AWS_S3_REGION=${{ env.AWS_REGION }} \
+            --build-arg AWS_S3_BUCKET_NAME=${{ env.S3_BUCKET_NAME }} \
             -t $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:latest
           docker push $ECR_REGISTRY/$FRONTEND_PUBLIC_ECR_REPOSITORY:$IMAGE_TAG
