@@ -12,13 +12,9 @@ export async function fetchRestaurantInfo(): Promise<RestaurantDto> {
 export async function updateRestaurantInfo(data: UpdateRestaurantDto) {
   const dtoInstance = plainToInstance(UpdateRestaurantDto, data);
 
-  console.log('Whats happeining', dtoInstance);
-
   const errors = await validate(dtoInstance);
-  console.log('Validation errors:', errors);
 
   if (errors.length > 0) {
-    console.error('Validation failed. Errors: ', errors);
     const errorString = errors.map(err => Object.values(err.constraints || {}).join(', ')).join('; ');
     throw new Error(errorString);
   }
