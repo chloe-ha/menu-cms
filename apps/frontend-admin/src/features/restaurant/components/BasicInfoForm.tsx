@@ -1,15 +1,22 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import type { RestaurantDto } from '../dto/restaurant.dto';
 import { updateRestaurantInfo } from '../api.service';
+import Button from '../../../shared/components/Button';
 
-export type RestaurantBasicInfo = Pick<RestaurantDto, 'name' | 'description' | 'images'>;
+export type RestaurantBasicInfo = Pick<RestaurantDto, 'name' | 'description'>;
 
 type BasicInfoFormProps = {
   data: RestaurantBasicInfo;
+  onSubmitSuccessful: () => void;
 };
-const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data }) => {
+const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data, onSubmitSuccessful }) => {
   const [formData, setFormData] = useState<RestaurantBasicInfo>(data);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setFormData(data);
+  }, [data]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -21,11 +28,16 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     updateRestaurantInfo(formData)
-      .then(() => alert('Restaurant information updated! (Check console for data)'))
+      .then(() => {
+        onSubmitSuccessful()
+      })
       .catch((error) => {
         setError('Failed to update restaurant information: ' + error.message);
-      });
+      })
+      .finally(() => setLoading(false));
   };
 
   return (
@@ -60,12 +72,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data }) => {
       </div>
       <div className="flex justify-end pt-4">
         {error && <p className="text-red-500 mr-4">{error}</p>}
-        <button
-          type="submit"
-          className="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150"
-        >
-          Save changes
-        </button>
+        <Button type="submit" loading={loading} />
       </div>
     </form>
   )

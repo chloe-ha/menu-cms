@@ -4,6 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { getRestaurantData } from "@/lib/data";
 import { getPageData } from "@/lib/data-mock";
+import { S3BaseUrl } from "@/lib/s3";
 import { cn, formatPrice } from "@/lib/utils";
 import { Clock, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
@@ -22,7 +23,7 @@ export default async function Page() {
             {restaurant.images.map((image, index) => (
               <CarouselItem key={index} className="">
                 <div key={image} className={cn("relative h-[150px]")}>
-                  <Image src={image} alt="banner image" fill className="object-cover" />
+                  <Image src={`${S3BaseUrl}${image}`} alt="banner image" fill className="object-cover" />
                 </div>
               </CarouselItem>
             ))}

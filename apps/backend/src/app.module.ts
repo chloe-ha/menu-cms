@@ -6,11 +6,10 @@ import { RestaurantsModule } from './restaurants/restaurants.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
-    UsersModule,
-    RestaurantsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -27,6 +26,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         },
       ],
     }),
+    S3Module,
+    UsersModule,
+    RestaurantsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: 'APP_GUARD', useClass: ThrottlerGuard }],

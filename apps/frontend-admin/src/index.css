@@ -31,4 +31,7 @@
   textarea {
     @apply rounded-md border border-foreground shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm;
   }
+  button {
+    cursor: pointer;
+  }
 }

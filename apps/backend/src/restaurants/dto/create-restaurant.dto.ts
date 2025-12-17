@@ -5,7 +5,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
   ValidateNested,
   IsPhoneNumber,
   Matches,
@@ -48,7 +47,7 @@ export class CreateRestaurantDto {
   name: string;
 
   @IsArray()
-  @IsUrl({}, { each: true })
+  @IsString({ each: true })
   images: string[];
 
   @IsString()

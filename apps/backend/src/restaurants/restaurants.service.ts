@@ -35,11 +35,14 @@ export class RestaurantsService {
 
   async update(id: string, updateRestaurantDto: UpdateRestaurantDto) {
     await this.restaurantModel.findByIdAndUpdate(id, updateRestaurantDto, { new: true }).exec();
-    const response = await fetch(`${this.configService.get<string>('NEXT_API_URL')}/revalidate`);
-    if (!response.ok) {
-      const errorMessage = `Restaurant with ID ${id} updated but failed to trigger revalidation`;
-      this.logger.error(errorMessage);
-      throw new HttpException(errorMessage, response.status);
+    if (this.configService.get<string>('NODE_ENV') !== 'development') {
+      const revalidateUrl = `${this.configService.get<string>('NEXT_API_URL')}/revalidate`;
+      const response = await fetch(revalidateUrl);
+      if (!response.ok) {
+        const errorMessage = `Restaurant with ID ${id} updated but failed to trigger revalidation`;
+        this.logger.error(`${errorMessage}: ${revalidateUrl}`);
+        throw new HttpException(errorMessage, response.status);
+      }
     }
     return this.findOne(id);
   }
