@@ -1,3 +1,4 @@
+import Map from "@/components/Map";
 import MaxWidthContainer from "@/components/MaxWidthContainer";
 import ScrollSpyNav from "@/components/ScrollSpyNav";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -36,6 +37,7 @@ export default async function Page() {
           {restaurant.name ? <h1 className="text-3xl sm:text-5xl font-bold">{restaurant.name}</h1>: null}
           {restaurant.description ? <p className="whitespace-pre-wrap">{restaurant.description}</p>: null}
           {restaurant.address ? <span className="flex gap-1 items-center"><MapPin size={18} />{restaurant.address}</span>: null}
+          <Map />
           {restaurant.phoneNumber ? <a className="flex gap-1 items-center" href={`tel:${restaurant.phoneNumber}`}><Phone size={18} />{restaurant.phoneNumber}</a>: null}
           <Accordion type="single" collapsible>
             <AccordionItem value="item-1">
