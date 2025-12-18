@@ -3,7 +3,7 @@ import type { RestaurantDto } from '../dto/restaurant.dto';
 import ImageUpload, { type ImageItem } from '../../../shared/components/ImageUpload';
 import { deleteS3Files, getSignedUrls, S3BaseUrl, uploadFileToS3 } from '../../../shared/services/s3.service';
 import { updateRestaurantInfo } from '../api.service';
-import Button from '../../../shared/components/Button';
+import SubmitButton from '../../../shared/components/SubmitButton';
 
 export type RestaurantImages = Pick<RestaurantDto, 'images'>;
 
@@ -70,7 +70,7 @@ const ImagesForm: React.FC<ImagesFormProps> = ({ data, onSubmitSuccessful }) => 
       />
       <div className="flex justify-end pt-4">
         {error && <p className="text-red-500 mr-4">{error}</p>}
-        <Button type="submit" loading={loading} />
+        <SubmitButton htmlType="submit" loading={loading} />
       </div>
     </form>
   )

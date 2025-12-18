@@ -4,6 +4,7 @@ import type { RestaurantDto } from '../dto/restaurant.dto';
 import { fetchRestaurantInfo } from '../api.service';
 import axios from 'axios';
 import ImagesForm from './ImagesForm';
+import OpeningHoursForm from './OpeningHoursForm';
 
 const RestaurantPage: React.FC = () => {
   const [formData, setFormData] = useState<RestaurantDto | null>(null);
@@ -49,6 +50,7 @@ const RestaurantPage: React.FC = () => {
         <React.Fragment>
           <BasicInfoForm data={extractBasicInfo(formData)} onSubmitSuccessful={fetchInfo} />
           <ImagesForm data={{ images: formData.images }} onSubmitSuccessful={fetchInfo} />
+          <OpeningHoursForm data={formData.openingHours} onSubmitSuccessful={fetchInfo} />
         </React.Fragment>
       )}
     </div>

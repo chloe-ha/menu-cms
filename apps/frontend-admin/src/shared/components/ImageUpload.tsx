@@ -11,7 +11,7 @@ export type ImageItem = { id: string; previewUrl: string; } & (FileImageItem | S
 export type ImageUploadProps = {
   id: string;
   value: ImageItem[];
-  onChange: (newImages: ImageItem[]) => void;
+  onChange: (newValue: ImageItem[]) => void;
 }
 
 // --- Drag and Drop Logic ---
@@ -195,8 +195,8 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ id, value, onChange }) => {
         htmlFor={id}
         className="
           inline-flex items-center px-4 py-2 mb-6 text-sm font-medium text-white
-          bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700
-          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+          bg-blue-600 rounded-lg shadow-md hover:bg-blue-700
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
           cursor-pointer transition duration-150 ease-in-out
         "
       >

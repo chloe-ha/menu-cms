@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import type { RestaurantDto } from '../dto/restaurant.dto';
 import { updateRestaurantInfo } from '../api.service';
-import Button from '../../../shared/components/Button';
+import SubmitButton from '../../../shared/components/SubmitButton';
 
 export type RestaurantBasicInfo = Pick<RestaurantDto, 'name' | 'description'>;
 
@@ -72,7 +72,7 @@ const BasicInfoForm: React.FC<BasicInfoFormProps> = ({ data, onSubmitSuccessful 
       </div>
       <div className="flex justify-end pt-4">
         {error && <p className="text-red-500 mr-4">{error}</p>}
-        <Button type="submit" loading={loading} />
+        <SubmitButton htmlType="submit" loading={loading} />
       </div>
     </form>
   )
